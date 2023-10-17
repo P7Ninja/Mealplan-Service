@@ -19,23 +19,23 @@ def ExecuteQuery(query, parameters):
     cursor.execute(query, parameters)
     database.commit()
 
-@app.post("/createMealPlan/")
-def CreateMealPlan(userID, startDate, endDate, totalMeals, mealsPerDay):
+@app.post("api/createMealPlan/")
+def CreateMealPlan(userID: int, startDate: str, endDate: str, totalMeals: int, mealsPerDay: int):
     if(userID != None and startDate != None and endDate != None and totalMeals != None and mealsPerDay != None):
         ExecuteQuery("INSERT INTO mealPlan VALUES(0, %s, %s, %s, %s, %s)", (userID, startDate, endDate, totalMeals, mealsPerDay))
 
 @app.post("/createMeal/")
-def CreateMeal(planID, mealNum, recipeID):
+def CreateMeal(planID: int, mealNum: int, recipeID: int):
     if(planID != None and mealNum != None and recipeID != None):
         ExecuteQuery("INSERT INTO meal VALUES(%s, %s, %s)", (planID, mealNum, recipeID))
 
 @app.post("/createPlanNutrition/")
-def CreatePlanNutrition(planID, calories, carbohydrates, protein, fat):
+def CreatePlanNutrition(planID: int, calories: int, carbohydrates: int, protein: int, fat: int):
     if(planID != None and calories != None and carbohydrates != None and protein != None and fat != None):
         ExecuteQuery("INSERT INTO totalPlanNutrition VALUES(%s, %s, %s, %s, %s)", (planID, calories, carbohydrates, protein, fat))
 
 @app.post("/deleteMealPlan/")
-def DeleteMealPlan(planID):
+def DeleteMealPlan(planID: int):
     if(planID == None):
         return
     ExecuteQuery("DELETE FROM mealPlan WHERE planID=%s", (planID,))
@@ -48,14 +48,14 @@ def DeleteMealPlan(planID):
 # DeleteMealPlan(3)
 
 @app.post("/updateMealPlan/")
-def UpdateMeal(planID, mealNum, recipeID, calories, carbohydrates, protein, fat):
+def UpdateMeal(planID: int, mealNum: int, recipeID: int, calories: int, carbohydrates: int, protein: int, fat: int):
     if(planID == None or mealNum == None or recipeID == None):
         return
     ExecuteQuery("UPDATE meal SET recipeID=%s WHERE planID=%s AND mealNum=%s", (recipeID, planID, mealNum))
     ExecuteQuery("UPDATE totalPlanNutrition SET calories=%s, carbohydrates=%s, protein=%s, fat=%s WHERE planID=%s",
                  (calories, carbohydrates, protein, fat, planID))
     
-def FetchMealPlan(planID):
+def FetchMealPlan(planID: int):
     data = {
         "mealPlan": [],
         "meal": [],
@@ -91,6 +91,8 @@ def FetchMealPlan(planID):
     data["totalPlanNutrition"].append({"planID": planID, "calories": calories, "carbohydrates": carbohydrates, "protein": protein, "fat": fat})
 
     return data
+
+
 
 # UpdateMeal(1, 1, 3678, 3000, 280, 180, 100)
 
