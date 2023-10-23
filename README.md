@@ -13,7 +13,7 @@ the mysql prefix is only if youre using a mysql server, else look up different s
 Creating docker container and running the app:
 ```sh
 docker build -t mealplanservice .
-docker run -p 8443:8443 recipeservice
+docker run -p 8443:8443 mealplanservice
 ```
 
 ### Development
