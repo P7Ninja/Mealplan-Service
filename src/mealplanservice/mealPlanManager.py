@@ -22,29 +22,22 @@ def getRecipeFromInventory(userid: int, calorieTarget: int, proteinTarget: int, 
     recipe = requests.post(url, calorieTarget, proteinTarget, carbTarget, fatTarget, food, mealTypes, mealsPerDay)
     
 
-def splitCaloriesAndMacros(userData[0]):
-    if proteinTarget not defined:
-        proteinTarget = (targetCalories*0.25)/4
-        carbTarget = (targetCalories*0.60)/4
-        fatTarget = (targetCalories*0.15)/8
-
-    breakfastTarget = [calorieTarget*0.2, proteinTarget*0.2, carbTarget*0.2, fatTarget*0.2]
-    lunchTarget = [calorieTarget*0.3, proteinTarget*0.3, carbTarget*0.3, fatTarget*0.3]
-    dinnerTarget = [calorieTarget*0.5, proteinTarget*0.5, carbTarget*0.5, fatTarget*0.5]
+# def splitCaloriesAndMacros(userData[0]):
+#     getUserTargets
+#     url = f"api/getUserInfo/macros"
+    
+#     breakfastTarget = [calorieTarget*0.2, proteinTarget*0.2, carbTarget*0.2, fatTarget*0.2]
+#     lunchTarget = [calorieTarget*0.3, proteinTarget*0.3, carbTarget*0.3, fatTarget*0.3]
+#     dinnerTarget = [calorieTarget*0.5, proteinTarget*0.5, carbTarget*0.5, fatTarget*0.5]
     
 
+# CalorieTarget: int
+# proteinTarget: int
+# carbTarget: int
+# fatTarget: int
+# foodList: [name, name,..., name]
+# mealType: int
 
-
-# {
-    # breakfastTarget.CalorieTarget: int
-    # proteinTarget: int
-    # carbTarget: int
-    # fatTarget: int
-    # targetList: [calorieTarget: int]
-    # foodList: [name, name,..., name]
-    # mealTypes: [morgenmad, snack, frokost, aften, snack]
-    # mealsPerDay: [2, 3]
-# }
 
 # targetCalories = 3000
 # proteinTarget = (targetCalories*0.25)/4 =
