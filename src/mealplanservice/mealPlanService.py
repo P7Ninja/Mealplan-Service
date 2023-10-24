@@ -20,34 +20,26 @@ class mealPlanService:
             self.__db.shutdown()
 
     def configure_routes(self):
-        self.__app.add_api_route("/get_current_mealplan/{id}", self.get_mealplan, methods=["GET"])
+        self.__app.add_api_route("/get_current_mealplan/{userID}", self.get_current_mealplan, methods=["GET"])
         # self.__app.add_api_route("/get_all_mealplans/{id}", self.get_mealplan, methods=["GET"])
         # self.__app.add_api_route("/delete_mealplan", self.delete_mealplan, methods=["POST"])
         self.__app.add_api_route("/", lambda: {"message": "Mealplan-Service"}, methods=["GET"])
 
-    async def get_current_mealplan(self,
-                                   planID: int=0, 
-                                   userID: int=0, 
-                                   startDate: str='', 
-                                   endDate: str='', 
-                                   totalCalories: int=0, 
-                                   totalProtein: float=0.0,
-                                   totalCarbohydrates: float=0.0,
-                                   totalFat: float=0.0):
-        return self.__db.get_current_mealplan(planID = planID,
-                                              userID=userID,
-                                              startDate=startDate,
-                                              endDate=endDate,
-                                              totalCalories=totalCalories,
-                                              totalProtein=totalProtein,
-                                              totalCarbohydrates=totalCarbohydrates,
-                                              totalFat=totalFat
-                                              )
+    async def get_current_mealplan(self, userID: int=0):
+        return self.__db.get_current_mealplan(userID=userID)
 
     # async def get_all_mealplans(self, userID int):
         
 
-
+    # async def get_current_mealplan(self,
+    #                                planID: int=0, 
+    #                                userID: int=0, 
+    #                                startDate: str='', 
+    #                                endDate: str='', 
+    #                                totalCalories: int=0, 
+    #                                totalProtein: float=0.0,
+    #                                totalCarbohydrates: float=0.0,
+    #                                totalFat: float=0.0
 
     async def get_recipe(self, id: int):
         return self.__db.get_recipe(id)

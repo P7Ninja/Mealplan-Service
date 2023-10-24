@@ -4,6 +4,7 @@ import mysql.connector
 
 from mealplanservice.database import schema
 from .BaseMealPlanDB import BaseMealPlanDB
+from pprint import pprint
 
 class SQLMealPlanDB(BaseMealPlanDB):
     def __init__(self, cfg: dict) -> None:
@@ -20,6 +21,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
         )
 
         self.__cursor = self.__database.cursor(dictionary=True)
+        self.__cursor = self.__database.cursor(buffered=True)
 
     def execute_query(self, query, parameters):
         self.__cursor.execute(query, parameters)
@@ -46,21 +48,56 @@ class SQLMealPlanDB(BaseMealPlanDB):
 
     def get_current_mealplan(self, userID: int):
         self.execute_query("SELECT planID, userID, startDate, endDate, totalCalories, totalProtein, totalCarbohydrates, totalFat FROM mealPlan WHERE userID=%s ORDER BY planID DESC", (userID,))
-        mealPlanResult = cursor.fetchone()
-        planID = mealPlanResult[0]
-        userID = mealPlanResult[1]
-        startDate = mealPlanResult[2]
-        endDate = mealPlanResult[3]
-        totalCalories = mealPlanResult[4]
-        totalProtein = mealPlanResult[5]
-        totalCarbohydrates = mealPlanResult[6]
-        totalFat = mealPlanResult[7]
+        meal_plan_result   = self.__cursor.fetchone()
+        planID             = meal_plan_result[0]
+        userID             = meal_plan_result[1]
+        startDate          = meal_plan_result[2]
+        endDate            = meal_plan_result[3]
+        totalCalories      = meal_plan_result[4]
+        totalProtein       = meal_plan_result[5]
+        totalCarbohydrates = meal_plan_result[6]
+        totalFat           = meal_plan_result[7]
 
-    # CreateMealPlan(1, "202s3-10-12 23:05:00", "2023-10-13 23:10:00", 6, 2)
-    # CreateMeal(1, 2, 34)
-    # CreatePlanNutrition(1, 3000, 300, 160, 100)
+        self.execute_query("SELECT id, recipeID FROM mealplanrecipes WHERE planID=%s ORDER BY id ASC", (planID,))
+        meal_plan_recipes_result = self.__cursor.fetchall()
+        recipe_id_list = []
+        for row in meal_plan_recipes_result:
+            recipe_id_list.append(row[1])
 
-    # DeleteMealPlan(3)
+        self.execute_query("SELECT id, meals FROM mealsperday WHERE planID=%s ORDER BY id ASC", (planID,))
+        meals_per_day_result = self.__cursor.fetchall()
+        meals_per_day_list = []
+        for row in meals_per_day_result:
+            print(row)
+            meals_per_day_list.append(row[1])
+
+        mealplan_json = {
+            "planID": planID,
+            "userID": userID,
+            "startDate": str(startDate),
+            "endDate": str(endDate),
+            "totalCalories": totalCalories,
+            "totalProtein": totalProtein,
+            "totalCarbohydrates": totalCarbohydrates,
+            "totalFat": totalFat
+        }
+
+        latest_recipe_index = 0
+        for day in range(0, len(meals_per_day_list)):
+            mealplan_json[f"day{day+1}"] = {}
+            for meal in range(meals_per_day_list[day]):
+                mealplan_json[f"day{day+1}"][f"meal{meal+1}"] = {
+                    "recipeID": recipe_id_list[latest_recipe_index + meal]
+                }
+            latest_recipe_index += meal + 1
+
+
+        mealplan_json_str = json.dumps(mealplan_json, indent=4)
+
+        with open('src/mealplanservice/database/visualisering.json', 'w') as f:
+            f.write(mealplan_json_str)
+        return mealplan_json_str
+        
 
     def update_meal(self, planID: int, mealNum: int, recipeID: int, calories: int, carbohydrates: int, protein: int, fat: int):
         if(planID == None or mealNum == None or recipeID == None):
@@ -69,45 +106,3 @@ class SQLMealPlanDB(BaseMealPlanDB):
         self.execute_query("UPDATE totalPlanNutrition SET calories=%s, carbohydrates=%s, protein=%s, fat=%s WHERE planID=%s",
                     (calories, carbohydrates, protein, fat, planID))
         
-    def fetch_meal_plan(self, planID: int):
-        data = {
-            "mealPlan": [],
-            "meal": [],
-            "totalPlanNutrition": []
-        }
-
-        self.execute_query("SELECT userID, startDate, endDate, totalMeals, mealsPerDay FROM mealPlan WHERE planID=%s", (planID,))
-        mealPlanResult = cursor.fetchone()
-        userID = mealPlanResult[0]
-        startDate = mealPlanResult[1]
-        endDate = mealPlanResult[2]
-        totalMeals = mealPlanResult[3]
-        mealsPerDay = mealPlanResult[4]
-
-        data["mealPlan"].append({"planID": planID, "userID": userID, "startDate":f"{startDate}", "endDate": f"{endDate}",
-        "totalMeals": totalMeals, "mealsPerDay": mealsPerDay})
-        
-        self.execute_query("SELECT mealNum, recipeID FROM meal WHERE planID=%s", (planID,))
-        meals = cursor.fetchall()
-        
-        
-        for meal in meals:
-            mealNum = meal[0]
-            recipeID = meal[1]
-            data["meal"].append({f"meal{mealNum}": {"recipeID": recipeID}})
-
-        self.execute_query("SELECT calories, carbohydrates, protein, fat FROM totalPlanNutrition WHERE planID=%s", (planID,))
-        totalPlanNutritionResult = cursor.fetchone()
-        calories = totalPlanNutritionResult[0]
-        carbohydrates = totalPlanNutritionResult[1]
-        protein = totalPlanNutritionResult[2]
-        fat = totalPlanNutritionResult[3]
-        data["totalPlanNutrition"].append({"planID": planID, "calories": calories, "carbohydrates": carbohydrates, "protein": protein, "fat": fat})
-
-        return data
-
-
-
-    # UpdateMeal(1, 1, 3678, 3000, 280, 180, 100)
-
-    # FetchMealPlan(1)
