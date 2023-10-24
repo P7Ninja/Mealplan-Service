@@ -1,6 +1,6 @@
 from . import schema
 
-class BaseMealplanDB:
+class BaseMealPlanDB:
     def __init__(self, cfg: dict) -> None:
             self.cfg = cfg
                 
@@ -16,11 +16,14 @@ class BaseMealplanDB:
     def create_mealplan(self, mealplan: schema.BasemealPlan) -> schema.mealplan:
          return
     
-    def get_mealplan(self, id: int) -> schema.mealplan:
+    def get_all_mealplans(self, userID: int) -> schema.mealplan:
          return
     
-    def delete_mealplan(self, id: int) -> schema.mealplan:
+    def get_current_mealplan(self, userID: int) -> schema.mealplan:
          return
     
-    def update_mealplan_item(self, id: int) -> schema.mealplan:
-        raise NotImplementedError("Not Implemented!")
+    def delete_mealplan(self, planID: int) -> schema.mealplan:
+         return
+    
+    # def update_mealplan_item(self, id: int) -> schema.mealplan:
+    #     raise NotImplementedError("Not Implemented!")

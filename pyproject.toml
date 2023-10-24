@@ -1,6 +1,6 @@
 [project]
 dynamic = ["version"]
-name = "recipeservice"
+name = "mealplanservice"
 authors = [
   { name="Peter Lauridsen", email="plauri20@student.aau.dk" },
   { name="Martin Jacobsen", email="mjacob20@student.aau.dk" },

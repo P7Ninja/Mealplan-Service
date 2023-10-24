@@ -4,12 +4,20 @@ class BasemealPlan(BaseModel):
     userID: int
     startDate: str
     endDate: str
-    mealsPerDay: list[int]
-    recipes: list[int]
     totalCalories: int
     totalProtein: float
     totalCarbohydrates: float
     totalFat: float
+
+class mealPlanRecipes(BaseModel):
+    id: int
+    planID: int
+    recipeID: int
+
+class mealsPerDay(BaseModel):
+    id: int
+    planID: int
+    meals: int
 
 class mealplan(BasemealPlan):
     id: int
