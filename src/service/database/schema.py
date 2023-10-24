@@ -1,17 +1,17 @@
 from pydantic import BaseModel
 
-class mealPlan(BaseModel):
-    id: int
+class BasemealPlan(BaseModel):
     userID: int
     startDate: str
     endDate: str
     mealsPerDay: list[int]
     recipes: list[int]
-
-
-class planNutrition(BaseModel):
-    planid: int
     totalCalories: int
     totalProtein: float
-    totalCarbs: float
+    totalCarbohydrates: float
     totalFat: float
+
+class mealplan(BasemealPlan):
+    id: int
+
+
