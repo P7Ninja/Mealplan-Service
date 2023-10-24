@@ -2,9 +2,9 @@
 dynamic = ["version"]
 name = "recipeservice"
 authors = [
-  { name="Peter lauridsen", email="mjhc@studen.aau.dk" },
+  { name="Peter Lauridsen", email="plauri20@student.aau.dk" },
   { name="Martin Jacobsen", email="mjacob20@student.aau.dk" },
-  { name="Peter lauridsen", email="mjhc@studen.aau.dk" },
+  { name="Kristoffer Gregersen", email="kmgr20@student.aau.dk" },
 ]
 description = "Description"
 readme = "README.md"
