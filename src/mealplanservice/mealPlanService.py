@@ -21,63 +21,12 @@ class mealPlanService:
 
     def configure_routes(self):
         self.__app.add_api_route("/get_current_mealplan/{userID}", self.get_current_mealplan, methods=["GET"])
-        # self.__app.add_api_route("/get_all_mealplans/{id}", self.get_mealplan, methods=["GET"])
+        self.__app.add_api_route("/get_all_mealplans/{userID}", self.get_all_mealplans, methods=["GET"])
         # self.__app.add_api_route("/delete_mealplan", self.delete_mealplan, methods=["POST"])
         self.__app.add_api_route("/", lambda: {"message": "Mealplan-Service"}, methods=["GET"])
 
     async def get_current_mealplan(self, userID: int=0):
         return self.__db.get_current_mealplan(userID=userID)
 
-    # async def get_all_mealplans(self, userID int):
-        
-
-    # async def get_current_mealplan(self,
-    #                                planID: int=0, 
-    #                                userID: int=0, 
-    #                                startDate: str='', 
-    #                                endDate: str='', 
-    #                                totalCalories: int=0, 
-    #                                totalProtein: float=0.0,
-    #                                totalCarbohydrates: float=0.0,
-    #                                totalFat: float=0.0
-
-    async def get_recipe(self, id: int):
-        return self.__db.get_recipe(id)
-    
-    async def get_recipes(self, 
-                          calories: float=0.0, 
-                          protein: float=0.0, 
-                          fat: float=0.0, 
-                          carbohydrates: float=0.0, 
-                          energy_error: float=0.0, 
-                          tags: _list=None,
-                          ingredients: _list=None
-                          ):
-        return self.__db.get_recipes(
-            calories=calories, 
-            protein=protein,
-            fat=fat,
-            carbs=carbohydrates,
-            energy_error=energy_error,
-            tags=tags,
-            ingredients=ingredients
-            )
-    
-    async def get_random_recipe(self, 
-                          calories: float=0.0, 
-                          protein: float=0.0, 
-                          fat: float=0.0, 
-                          carbohydrates: float=0.0, 
-                          energy_error: float=0.0, 
-                          tags: _list=None,
-                          ingredients: _list=None
-                          ):
-        return self.__db.get_random_recipe(
-            calories=calories, 
-            protein=protein,
-            fat=fat,
-            carbs=carbohydrates,
-            energy_error=energy_error,
-            tags=tags,
-            ingredients=ingredients
-            )
+    async def get_all_mealplans(self, userID: int=0):
+        return self.__db.get_all_mealplans(userID=userID)

@@ -1,50 +1,52 @@
 {
-    "planID": 1,
-    "userID": 1,
-    "startDate": "2023-10-24 14:30:00",
-    "endDate": "2023-10-24 14:35:00",
-    "totalCalories": 3000,
-    "totalProtein": 200.0,
-    "totalCarbohydrates": 300,
-    "totalFat": 70.0,
-    "day1": {
-        "meal1": {
-            "recipeID": 1
-        },
-        "meal2": {
-            "recipeID": 2
-        },
-        "meal3": {
-            "recipeID": 2
-        }
-    },
-    "day2": {
-        "meal1": {
-            "recipeID": 10
-        },
-        "meal2": {
-            "recipeID": 4
-        }
-    },
-    "day3": {
-        "meal1": {
-            "recipeID": 30
-        },
-        "meal2": {
-            "recipeID": 3100
-        }
-    },
-    "day4": {
-        "meal1": {
-            "recipeID": 3100
-        },
-        "meal2": {
-            "recipeID": 3100
-        }
-    },
-    "day5": {
-        "meal1": {
-            "recipeID": 1249
-        }
-    }
+     "plan1": {
+          "planID": 1,
+          "userID": 1,
+          "startDate": "2023-10-24 14:30:00",
+          "endDate": "2023-10-24 14:35:00",
+          "totalCalories": 3,
+          "totalProtein": 3000,
+          "totalCarbohydrates": 200.0,
+          "totalFat": 300,
+          "day1": {
+               "meal1": {
+                    "recipeID": 1
+               },
+               "meal2": {
+                    "recipeID": 2
+               },
+               "meal3": {
+                    "recipeID": 2
+               }
+          },
+          "day2": {
+               "meal1": {
+                    "recipeID": 10
+               },
+               "meal2": {
+                    "recipeID": 4
+               }
+          },
+          "day3": {
+               "meal1": {
+                    "recipeID": 30
+               },
+               "meal2": {
+                    "recipeID": 3100
+               }
+          },
+          "day4": {
+               "meal1": {
+                    "recipeID": 3100
+               },
+               "meal2": {
+                    "recipeID": 3100
+               }
+          },
+          "day5": {
+               "meal1": {
+                    "recipeID": 1249
+               }
+          }
+     }
 }

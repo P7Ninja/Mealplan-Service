@@ -47,7 +47,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
 
 
     def get_current_mealplan(self, userID: int):
-        self.execute_query("SELECT planID, userID, startDate, endDate, totalCalories, totalProtein, totalCarbohydrates, totalFat FROM mealPlan WHERE userID=%s ORDER BY planID DESC", (userID,))
+        self.execute_query("SELECT * FROM mealPlan WHERE userID=%s ORDER BY planID ASC", (userID,))
         meal_plan_result   = self.__cursor.fetchone()
         planID             = meal_plan_result[0]
         userID             = meal_plan_result[1]
@@ -97,12 +97,67 @@ class SQLMealPlanDB(BaseMealPlanDB):
         with open('src/mealplanservice/database/visualisering.json', 'w') as f:
             f.write(mealplan_json_str)
         return mealplan_json_str
-        
+    
+    def get_all_mealplans(self, userID: int):
+        self.execute_query("SELECT * FROM mealPlan WHERE userID=%s ORDER BY planID ASC", (userID,))
+        meal_plan_result1   = self.__cursor.fetchall()
+        plan_num = 1
+        mealplan_json = {}
+        for meal_plan_result in meal_plan_result1:
+            planID             = meal_plan_result[0]
+            userID             = meal_plan_result[1]
+            startDate          = meal_plan_result[2]
+            endDate            = meal_plan_result[3]
+            totalCalories      = meal_plan_result[4]
+            totalProtein       = meal_plan_result[5]
+            totalCarbohydrates = meal_plan_result[6]
+            totalFat           = meal_plan_result[7]
 
-    def update_meal(self, planID: int, mealNum: int, recipeID: int, calories: int, carbohydrates: int, protein: int, fat: int):
-        if(planID == None or mealNum == None or recipeID == None):
-            return
-        self.execute_query("UPDATE meal SET recipeID=%s WHERE planID=%s AND mealNum=%s", (recipeID, planID, mealNum))
-        self.execute_query("UPDATE totalPlanNutrition SET calories=%s, carbohydrates=%s, protein=%s, fat=%s WHERE planID=%s",
-                    (calories, carbohydrates, protein, fat, planID))
+            self.execute_query("SELECT id, recipeID FROM mealplanrecipes WHERE planID=%s ORDER BY id ASC", (planID,))
+            meal_plan_recipes_result = self.__cursor.fetchall()
+            recipe_id_list = []
+            for row in meal_plan_recipes_result:
+                recipe_id_list.append(row[1])
+
+            self.execute_query("SELECT id, meals FROM mealsperday WHERE planID=%s ORDER BY id ASC", (planID,))
+            meals_per_day_result = self.__cursor.fetchall()
+            meals_per_day_list = []
+            for row in meals_per_day_result:
+                print(row)
+                meals_per_day_list.append(row[1])
+        
+            mealplan_json[f"plan{plan_num}"] = {
+                "planID": planID,
+                "userID": userID,
+                "startDate": str(startDate),
+                "endDate": str(endDate),
+                "totalCalories": totalCalories,
+                "totalProtein": totalProtein,
+                "totalCarbohydrates": totalCarbohydrates,
+                "totalFat": totalFat
+                }
+                
+
+            latest_recipe_index = 0
+            for day in range(0, len(meals_per_day_list)):
+                mealplan_json[f"plan{plan_num}"][f"day{day+1}"] = {}
+                for meal in range(meals_per_day_list[day]):
+                    mealplan_json[f"plan{plan_num}"][f"day{day+1}"][f"meal{meal+1}"] = {
+                        "recipeID": recipe_id_list[latest_recipe_index + meal]
+                    }
+                latest_recipe_index += meal + 1
+            plan_num += 1
+        
+        
+        mealplan_json_str = json.dumps(mealplan_json, indent=5)
+        with open('src/mealplanservice/database/visualisering.json', 'w') as f:
+            f.write(mealplan_json_str)
+        return mealplan_json_str
+        
+    # def update_meal(self, planID: int, mealNum: int, recipeID: int, calories: int, carbohydrates: int, protein: int, fat: int):
+    #     if(planID == None or mealNum == None or recipeID == None):
+    #         return
+    #     self.execute_query("UPDATE meal SET recipeID=%s WHERE planID=%s AND mealNum=%s", (recipeID, planID, mealNum))
+    #     self.execute_query("UPDATE totalPlanNutrition SET calories=%s, carbohydrates=%s, protein=%s, fat=%s WHERE planID=%s",
+    #                 (calories, carbohydrates, protein, fat, planID))
         
