@@ -26,7 +26,7 @@ class mealPlanService:
         self.__app.add_api_route("/mealsPerDay", self.create_meals_per_day, methods=["POST"])
         self.__app.add_api_route("/mealPlan/{userID}", self.get_current_meal_plan, methods=["GET"])
         self.__app.add_api_route("/mealPlans/{userID}", self.get_all_meal_plans, methods=["GET"])
-        self.__app.add_api_route("/mealplan/{planID}", self.delete_meal_plan, methods=["DELETE"])
+        self.__app.add_api_route("/mealPlan/{planID}", self.delete_meal_plan, methods=["DELETE"])
         self.__app.add_api_route("/", lambda: {"message": "Mealplan-Service"}, methods=["GET"])
 
     async def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):

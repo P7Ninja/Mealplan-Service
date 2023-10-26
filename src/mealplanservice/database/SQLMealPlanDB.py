@@ -70,7 +70,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
         for row in meals_per_day_result:
             meals_per_day_list.append(row[1])
 
-        mealplan_json = {
+        meal_plan_json = {
             "planID": planID,
             "userID": userID,
             "startDate": str(startDate),
@@ -83,20 +83,20 @@ class SQLMealPlanDB(BaseMealPlanDB):
 
         latest_recipe_index = 0
         for day in range(0, len(meals_per_day_list)):
-            mealplan_json[f"day{day+1}"] = {}
+            meal_plan_json[f"day{day+1}"] = {}
             for meal in range(meals_per_day_list[day]):
-                mealplan_json[f"day{day+1}"][f"meal{meal+1}"] = {
+                meal_plan_json[f"day{day+1}"][f"meal{meal+1}"] = {
                     "recipeID": recipe_id_list[latest_recipe_index + meal]
                 }
             latest_recipe_index += meal + 1
 
-        return mealplan_json
+        return meal_plan_json
     
     def get_all_meal_plans(self, userID: int):
         self.execute_query("SELECT * FROM mealPlan WHERE userID=%s ORDER BY planID DESC", (userID,))
         meal_plan_result1   = self.__cursor.fetchall()
         plan_num = 1
-        mealplan_json = {}
+        meal_plan_json = {}
         for meal_plan_result in meal_plan_result1:
             planID             = meal_plan_result[0]
             userID             = meal_plan_result[1]
@@ -119,7 +119,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
             for row in meals_per_day_result:
                 meals_per_day_list.append(row[1])
         
-            mealplan_json[f"plan{plan_num}"] = {
+            meal_plan_json[f"plan{plan_num}"] = {
                 "planID": planID,
                 "userID": userID,
                 "startDate": str(startDate),
@@ -133,13 +133,13 @@ class SQLMealPlanDB(BaseMealPlanDB):
 
             latest_recipe_index = 0
             for day in range(0, len(meals_per_day_list)):
-                mealplan_json[f"plan{plan_num}"][f"day{day+1}"] = {}
+                meal_plan_json[f"plan{plan_num}"][f"day{day+1}"] = {}
                 for meal in range(meals_per_day_list[day]):
-                    mealplan_json[f"plan{plan_num}"][f"day{day+1}"][f"meal{meal+1}"] = {
+                    meal_plan_json[f"plan{plan_num}"][f"day{day+1}"][f"meal{meal+1}"] = {
                         "recipeID": recipe_id_list[latest_recipe_index + meal]
                     }
                 latest_recipe_index += meal + 1
             plan_num += 1
         
-        return mealplan_json
+        return meal_plan_json
 
