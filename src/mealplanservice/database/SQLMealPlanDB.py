@@ -81,14 +81,16 @@ class SQLMealPlanDB(BaseMealPlanDB):
             "totalFat": totalFat
         }
 
+        days = []
         latest_recipe_index = 0
         for day in range(0, len(meals_per_day_list)):
-            meal_plan_json[f"day{day+1}"] = {}
+            day_content = {}
             for meal in range(meals_per_day_list[day]):
-                meal_plan_json[f"day{day+1}"][f"meal{meal+1}"] = {
-                    "recipeID": recipe_id_list[latest_recipe_index + meal]
-                }
+                day_content[f"recipeID{meal+1}"] = recipe_id_list[latest_recipe_index + meal]
+            days.append(day_content)
             latest_recipe_index += meal + 1
+        days.reverse()
+        meal_plan_json["days"] = days
 
         return meal_plan_json
     
@@ -129,16 +131,19 @@ class SQLMealPlanDB(BaseMealPlanDB):
                 "totalCarbohydrates": totalCarbohydrates,
                 "totalFat": totalFat
                 }
-                
+            
 
+            days = []
             latest_recipe_index = 0
             for day in range(0, len(meals_per_day_list)):
-                meal_plan_json[f"plan{plan_num}"][f"day{day+1}"] = {}
+                day_content = {}
+                meal_plan_json[f"plan{plan_num}"]["days"] = {}
                 for meal in range(meals_per_day_list[day]):
-                    meal_plan_json[f"plan{plan_num}"][f"day{day+1}"][f"meal{meal+1}"] = {
-                        "recipeID": recipe_id_list[latest_recipe_index + meal]
-                    }
+                    day_content[f"recipeID{meal+1}"] = recipe_id_list[latest_recipe_index + meal]
                 latest_recipe_index += meal + 1
+                days.append(day_content)
+            days.reverse()
+            meal_plan_json[f"plan{plan_num}"]["days"] = days
             plan_num += 1
         
         return meal_plan_json

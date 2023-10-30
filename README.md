@@ -4,7 +4,10 @@
 
 Make a `.env` file in the root directory and create a variable write the following:
 ```python
-DB_CONN="mysql+mysqlconnector://<YOUR_SQLALCHEMY_STRING>"
+HOST='YOUR_HOST'
+USER='YOUR_USER'
+PASSWORD='YOUR_PASSWORD'
+DATABASE='MealPlanService'
 ```
 the mysql prefix is only if youre using a mysql server, else look up different sqlalchemy supported sql databases
 
