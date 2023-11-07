@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class BasemealPlan(BaseModel):
+class BaseMealPlan(BaseModel):
     userID: int
     startDate: str
     endDate: str
@@ -9,15 +9,13 @@ class BasemealPlan(BaseModel):
     totalCarbohydrates: float
     totalFat: float
 
-class mealPlanRecipes(BaseModel):
-    id: int
+class mealPlanRecipe(BaseModel):
     planID: int
     recipeID: int
 
 class mealsPerDay(BaseModel):
-    id: int
     planID: int
     meals: int
 
-class mealplan(BasemealPlan):
+class mealplan(BaseMealPlan):
     id: int
