@@ -9,44 +9,6 @@ import asyncio
 
 _list = Annotated[list[str] | None, Query()]
 
-T = TypeVar('T')
-
-class ResponseType(Enum):
-    DICT = 0
-    LIST = 1
-    PRIM = 2
-
-
-class Service:
-    def __init__(self, dest: str):
-        self.__dest = dest
-        self.__types = {
-            ResponseType.DICT: lambda m, x: m(**x),
-            ResponseType.LIST: lambda m, x: m(*x),
-            ResponseType.PRIM: lambda m, x: m(x)
-        }
-
-    async def request(self, 
-                      method: str,
-                      endpoint: str,
-                      res_model: Type[T],
-                      res_type: ResponseType=ResponseType.DICT,
-                      data: str = None,
-                      ) -> T:
-        async with httpx.AsyncClient() as client:
-            req = client.build_request(method, self.__dest + endpoint, data=data)
-            res = (await asyncio.gather(client.send(req)))[0]
-            
-            if res.status_code in range(400, 599):
-                err: dict = res.json()
-                detail = err.get("detail", None)
-                if detail is None:
-                    detail = err.get("title", "Error")
-                raise HTTPException(
-                    status_code=res.status_code, 
-                    detail=detail
-                    )
-            return self.__types[res_type](res_model, res.json())
 
 class mealPlanService:
     def __init__(self, app: FastAPI, database: BaseMealPlanDB, cfg: dict) -> None:
@@ -94,22 +56,21 @@ class mealPlanService:
     
     # async def generate_meal_plan(self, userID: int=0):
     #     return self.__db.generate_meal_plan(userID)
-    
+
     async def generate_meal_plan(self, user_id):
         params = {'calories': 428.0, 
                 'protein': 29.0207, 
                 'fat': 43.7259, 
                 'carbohydrates': 25.5363, 
-                'energy_error': 1, 
+                'energy_error': 0.5, 
                 'tags': [], 
                 'ingredients': []}
-        service_recipe = Service("http://localhost:8443")
-        r = await service_recipe.request("get", "/recipe/random", dict, dict, params)
-        
-        response_content = await r.text()
-        print("Response Content:", response_content)  # Debugging line
-        
-        response_json = await r.json()
-        return response_json
+        async with httpx.AsyncClient() as client:
+            r = await client.get("http://localhost:8443/recipe/random", params=params)
+            response_content = r.text
+            print("Response Content:", response_content)  # Debugging line
+    
+            response_json = r.json()
+            return response_json
 
     # targets: list=[], split_days: list=[]
