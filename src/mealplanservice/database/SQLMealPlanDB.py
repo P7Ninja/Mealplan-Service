@@ -1,7 +1,55 @@
-from fastapi import FastAPI
+import pprint
+from fastapi import FastAPI, HTTPException
 import mysql.connector
+import requests
 from mealplanservice.database import schema
 from .BaseMealPlanDB import BaseMealPlanDB
+import os
+import httpx
+from enum import Enum
+from typing import TypeVar, Type
+import asyncio
+
+T = TypeVar('T')
+
+class ResponseType(Enum):
+    DICT = 0
+    LIST = 1
+    PRIM = 2
+
+
+class Service:
+    def __init__(self, dest: str):
+        self.__dest = dest
+        self.__types = {
+            ResponseType.DICT: lambda m, x: m(**x),
+            ResponseType.LIST: lambda m, x: m(*x),
+            ResponseType.PRIM: lambda m, x: m(x)
+        }
+
+    async def request(self, 
+                      method: str,
+                      endpoint: str,
+                      res_model: Type[T],
+                      res_type: ResponseType=ResponseType.DICT,
+                      data: str = None,
+                      ) -> T:
+        async with httpx.AsyncClient() as client:
+            req = client.build_request(method, self.__dest + endpoint, data=data)
+            res = (await asyncio.gather(client.send(req)))[0]
+            
+            if res.status_code in range(400, 599):
+                err: dict = res.json()
+                detail = err.get("detail", None)
+                if detail is None:
+                    detail = err.get("title", "Error")
+                raise HTTPException(
+                    status_code=res.status_code, 
+                    detail=detail
+                    )
+            return self.__types[res_type](res_model, res.json())
+
+# app = FastAPI()
 
 class SQLMealPlanDB(BaseMealPlanDB):
     def __init__(self, cfg: dict) -> None:
@@ -43,45 +91,6 @@ class SQLMealPlanDB(BaseMealPlanDB):
             return
         self.execute_query("DELETE FROM mealPlan WHERE planID=%s", (planID,))
         return {"Message": "Success", "planID": planID}
-
-    # def get_current_meal_plan(self, userID: int):
-    #     self.execute_query("SELECT * FROM mealPlan WHERE userID=%s ORDER BY planID DESC", (userID,))
-    #     meal_plan_result   = self.__cursor.fetchone()
-    #     meal_plan_json = {
-    #         "planID": meal_plan_result[0],
-    #         "userID": meal_plan_result[1],
-    #         "startDate": str(meal_plan_result[2]),
-    #         "endDate": str(meal_plan_result[3]),
-    #         "totalCalories": meal_plan_result[4],
-    #         "totalProtein": meal_plan_result[5],
-    #         "totalCarbohydrates": meal_plan_result[6],
-    #         "totalFat": meal_plan_result[7]
-    #     }
-
-    #     self.execute_query("SELECT id, recipeID FROM mealplanrecipes WHERE planID=%s ORDER BY id DESC", (meal_plan_json["planID"],))
-    #     meal_plan_recipes_result = self.__cursor.fetchall()
-    #     recipe_id_list = []
-    #     for row in meal_plan_recipes_result:
-    #         recipe_id_list.append(row[1])
-
-    #     self.execute_query("SELECT id, meals FROM mealsperday WHERE planID=%s ORDER BY id DESC", (meal_plan_json["planID"],))
-    #     meals_per_day_result = self.__cursor.fetchall()
-    #     meals_per_day_list = []
-    #     for row in meals_per_day_result:
-    #         meals_per_day_list.append(row[1])
-
-    #     days = []
-    #     latest_recipe_index = 0
-    #     for day in range(0, len(meals_per_day_list)):
-    #         day_content = {}
-    #         for meal in range(meals_per_day_list[day]):
-    #             day_content[f"recipeID{meal+1}"] = recipe_id_list[latest_recipe_index + meal]
-    #         days.append(day_content)
-    #         latest_recipe_index += meal + 1
-    #     days.reverse()
-    #     meal_plan_json["days"] = days
-
-    #     return meal_plan_json
 
     def get_current_meal_plan(self, userID: int):
         self.execute_query("""
@@ -173,3 +182,91 @@ class SQLMealPlanDB(BaseMealPlanDB):
         
         return meal_plan_json
 
+    async def generate_meal_plan(self, user_id):
+        params = {'calories': 428.0, 
+        'protein': 29.0207, 
+        'fat': 43.7259, 
+        'carbohydrates': 25.5363, 
+        'energy_error': 1, 
+        'tags': [], 
+        'ingredients': []}
+        service_recipe = Service("http://localhost:8443")
+        r = service_recipe.request("get", "/recipe/random", dict, dict, params)
+        
+        # httpx.get("http://localhost:8443/recipe/random", params=params)
+        return await r
+        # energy_error = 0.05
+        # mealplan_json = {}
+        # recipe_nr = 0
+        # # inventory = getinventory(user_id)
+        # for day in (len(split_days)/3):
+        #     breakfast_split = split_days[1*day-1]
+        #     lunch_split = split_days[1*day]
+        #     dinner_split = split_days[1*day+1]
+        #     print(breakfast_split)
+
+        #     if breakfast_split:
+        #         split_breakfast = {
+        #         "calories": targets[0] * breakfast_split,
+        #         "fat": targets[1] * breakfast_split,
+        #         "carbohydrates": targets[2] * breakfast_split,
+        #         "protein": targets [3] * breakfast_split,
+        #         'energy_error': energy_error, 
+        #         'tags': [], 
+        #         'ingredients': []
+        #         }
+        #         breakfast_recipe = httpx.get("http://127.0.0.1:8000/recipe/random", params=split_breakfast)
+        #         mealplan_json[f"recipe{recipe_nr}"] = breakfast_recipe
+        #         recipe_nr += 1
+
+        #     if lunch_split:
+        #         split_lunch = {
+        #         "calories": targets[0] * lunch_split,
+        #         "fat": targets[1] * lunch_split,
+        #         "carbohydrates": targets[2] * lunch_split,
+        #         "protein": targets [3] * lunch_split,
+        #         'energy_error': energy_error, 
+        #         'tags': [], 
+        #         'ingredients': []
+        #         }
+        #         lunch_recipe = httpx.get("http://127.0.0.1:8000/recipe/random", params=split_lunch)
+        #         mealplan_json[f"recipe{recipe_nr}"] = lunch_recipe
+        #         recipe_nr += 1
+
+        #     if dinner_split:
+        #         split_dinner = {
+        #         "calories": targets[0] * dinner_split,
+        #         "fat": targets[1] * dinner_split,
+        #         "carbohydrates": targets[2] * dinner_split,
+        #         "protein": targets [3] * dinner_split,
+        #         'energy_error': energy_error, 
+        #         'tags': [], 
+        #         'ingredients': []
+        #         }
+        #         dinner_recipe = httpx.get("http://127.0.0.1:8000/recipe/random", params=split_dinner)
+        #         mealplan_json[f"recipe{recipe_nr}"] = dinner_recipe
+        #         recipe_nr += 1
+        
+        # pprint(mealplan_json)
+
+
+    #   calories: float=0.0, 
+    #   protein: float=0.0, 
+    #   fat: float=0.0, 
+    #   carbohydrates: float=0.0, 
+    #   energy_error: float=0.0, 
+    #   tags: _list=None,
+    #   ingredients: _list=None 
+
+
+
+
+# data = {'calories': '428.0', 
+#         'protein': '29.0207', 
+#         'fat': '43.7259', 
+#         'carbohydrates': '25.5363', 
+#         'energy_error': '0.1', 
+#         'tags': '', 
+#         'ingredients': ''}
+
+# r = httpx.get("http://localhost:8443/recipe/random", data=data)
