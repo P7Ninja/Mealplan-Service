@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Query
 from .database import BaseMealPlanDB
-from typing import Annotated
 from .database import schema
 import httpx
 from enum import Enum
@@ -50,18 +49,13 @@ class mealPlanService:
     
     async def delete_meal_plan(self, planID: int=0):
         return self.__db.delete_meal_plan(planID)
-    
-    # async def generate_meal_plan(self, userID: int=0):
-    #     return self.__db.generate_meal_plan(userID)
 
     async def generate_meal_plan(self, user_id: int=0, targets: List[int] = Query([]), split_days: List[float] = Query([])):
-        print("funk")
-        # print(s_r)
         async with httpx.AsyncClient() as client:
-            energy_error = 1
+            energy_error = 0.5
             mealplan_json = {}
             recipe_nr = 0
-                # inventory = getinventory(user_id)
+            # inventory = getinventory(user_id)
             for day in range(0, (len(split_days)//3)):
                 breakfast_index = 3 * day
                 lunch_index = 3 * day + 1
