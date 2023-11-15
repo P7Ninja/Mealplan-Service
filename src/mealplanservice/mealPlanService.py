@@ -4,11 +4,8 @@ from typing import Annotated
 from .database import schema
 import httpx
 from enum import Enum
-from typing import TypeVar, Type
+from typing import TypeVar, Type, List
 import asyncio
-
-_list = Annotated[list[str] | None, Query()]
-
 
 class mealPlanService:
     def __init__(self, app: FastAPI, database: BaseMealPlanDB, cfg: dict) -> None:
@@ -57,20 +54,62 @@ class mealPlanService:
     # async def generate_meal_plan(self, userID: int=0):
     #     return self.__db.generate_meal_plan(userID)
 
-    async def generate_meal_plan(self, user_id):
-        params = {'calories': 428.0, 
-                'protein': 29.0207, 
-                'fat': 43.7259, 
-                'carbohydrates': 25.5363, 
-                'energy_error': 0.5, 
-                'tags': [], 
-                'ingredients': []}
+    async def generate_meal_plan(self, user_id: int=0, targets: List[int] = Query([]), split_days: List[float] = Query([])):
+        print("funk")
+        # print(s_r)
         async with httpx.AsyncClient() as client:
-            r = await client.get("http://localhost:8443/recipe/random", params=params)
-            response_content = r.text
-            print("Response Content:", response_content)  # Debugging line
-    
-            response_json = r.json()
-            return response_json
-
-    # targets: list=[], split_days: list=[]
+            energy_error = 1
+            mealplan_json = {}
+            recipe_nr = 0
+                # inventory = getinventory(user_id)
+            for day in range(0, (len(split_days)//3)):
+                breakfast_index = 3 * day
+                lunch_index = 3 * day + 1
+                dinner_index = 3 * day + 2
+                breakfast_split = split_days[breakfast_index]
+                lunch_split = split_days[lunch_index]
+                dinner_split = split_days[dinner_index]
+                
+                if breakfast_split:
+                    split_breakfast = {
+                    "calories": targets[0] * breakfast_split,
+                    "fat": targets[1] * breakfast_split,
+                    "carbohydrates": targets[2] * breakfast_split,
+                    "protein": targets [3] * breakfast_split,
+                    'energy_error': energy_error, 
+                    'tags': ["Morgenmad"], 
+                    'ingredients': []
+                    }
+                    breakfast_response = await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=split_breakfast)
+                    breakfast_recipe = breakfast_response.json()
+                    mealplan_json[f"recipe{recipe_nr}"] = breakfast_recipe
+                    recipe_nr += 1
+                if lunch_split:
+                    split_lunch = {
+                    "calories": targets[0] * lunch_split,
+                    "fat": targets[1] * lunch_split,
+                    "carbohydrates": targets[2] * lunch_split,
+                    "protein": targets [3] * lunch_split,
+                    'energy_error': energy_error, 
+                    'tags': ["Middagsmad"], 
+                    'ingredients': []
+                    }
+                    lunch_response = await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=split_lunch)
+                    lunch_recipe = lunch_response.json()
+                    mealplan_json[f"recipe{recipe_nr}"] = lunch_recipe
+                    recipe_nr += 1
+                if dinner_split:
+                    split_dinner = {
+                    "calories": targets[0] * dinner_split,
+                    "fat": targets[1] * dinner_split,
+                    "carbohydrates": targets[2] * dinner_split,
+                    "protein": targets [3] * dinner_split,
+                    'energy_error': energy_error, 
+                    'tags': ["Aftensmad"], 
+                    'ingredients': []
+                    }
+                    dinner_response = await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=split_dinner)
+                    dinner_recipe = dinner_response.json()
+                    mealplan_json[f"recipe{recipe_nr}"] = dinner_recipe
+                    recipe_nr += 1
+            return mealplan_json

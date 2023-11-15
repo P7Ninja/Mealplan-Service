@@ -8,6 +8,7 @@ HOST='YOUR_HOST'
 USER='YOUR_USER'
 PASSWORD='YOUR_PASSWORD'
 DATABASE='MealPlanService'
+RECIPESERVICE='http://recipeserviceurl:port'
 ```
 the mysql prefix is only if youre using a mysql server, else look up different sqlalchemy supported sql databases
 
