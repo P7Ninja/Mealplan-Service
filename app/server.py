@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from dotenv import dotenv_values
 
 from mealplanservice.database import SQLMealPlanDB
 from mealplanservice import mealPlanService
+import os
 
-cfg = dotenv_values(".env")
+
+cfg = os.environ
 
 app = FastAPI()
 db = SQLMealPlanDB(cfg)
