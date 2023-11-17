@@ -9,6 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY /src/mealplanservice /application/mealplanservice
 COPY /app/server.py /application/server.py
 
-EXPOSE 8755
-
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "7004", "--root-path", "/mealplanservice"]
