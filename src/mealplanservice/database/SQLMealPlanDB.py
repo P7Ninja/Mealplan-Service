@@ -1,16 +1,6 @@
-import pprint
-from fastapi import FastAPI, HTTPException
 import mysql.connector
-import requests
 from mealplanservice.database import schema
 from .BaseMealPlanDB import BaseMealPlanDB
-import os
-import httpx
-from enum import Enum
-from typing import TypeVar, Type
-import asyncio
-
-# app = FastAPI()
 
 class SQLMealPlanDB(BaseMealPlanDB):
     def __init__(self, cfg: dict) -> None:
@@ -30,21 +20,25 @@ class SQLMealPlanDB(BaseMealPlanDB):
         self.__cursor = self.__database.cursor(buffered=True)
 
     def execute_query(self, query, parameters):
+        self.__cursor = self.__database.cursor(dictionary=True)
+        self.__cursor = self.__database.cursor(buffered=True)
         self.__cursor.execute(query, parameters)
         self.__database.commit()
+        self.__cursor.close()
 
     def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):
-        parameters = (0, baseMealPlan.userID, baseMealPlan.startDate, baseMealPlan.endDate, baseMealPlan.totalCalories, 
-                      baseMealPlan.totalProtein, baseMealPlan.totalCarbohydrates, baseMealPlan.totalFat)
-        self.execute_query("INSERT INTO mealPlan VALUES(%s, %s, %s, %s, %s, %s, %s, %s)", parameters)
-        return {"message": "Success"}
+        parameters = (0, baseMealPlan.userID, baseMealPlan.startDate, baseMealPlan.endDate)
+        self.execute_query("INSERT INTO mealPlan VALUES(%s, %s, %s, %s)", parameters)
+        return self.__cursor.lastrowid
 
     def create_meal_recipe(self, mealPlanRecipe: schema.mealPlanRecipe):
         self.execute_query("INSERT INTO mealPlanRecipes VALUES(0, %s, %s)", (mealPlanRecipe.planID, mealPlanRecipe.recipeID))
         return {"message": "Success", "planID": mealPlanRecipe.planID, "recipeID": mealPlanRecipe.recipeID}
 
     def create_meals_per_day(self, mealsPerDay: schema.mealsPerDay):
-        self.execute_query("INSERT INTO mealsPerDay VALUES(0, %s, %s)", (mealsPerDay.planID, mealsPerDay.meals))
+        parameters = (0, mealsPerDay.planID, mealsPerDay.meals, mealsPerDay.totalCalories, mealsPerDay.totalProtein,
+                      mealsPerDay.totalCarbohydrates, mealsPerDay.totalFat)
+        self.execute_query("INSERT INTO mealsPerDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
         return {"message": "Success", "planID": mealsPerDay.planID, "recipeID": mealsPerDay.meals}
 
     def delete_meal_plan(self, planID: int):
