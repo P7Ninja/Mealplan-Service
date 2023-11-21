@@ -2,6 +2,7 @@ import pytest
 from pytest import FixtureRequest
 from unittest.mock import call
 
+
 from mealplanservice.database import SQLMealPlanDB
 from mealplanservice.database.schema import BaseMealPlan, mealPlanRecipe, mealsPerDay, mealplan
 
@@ -19,10 +20,13 @@ def mock_mysql_connection(mocker):
     return mocker.patch("mealplanservice.database.SQLMealPlanDB.mysql.connector.connect")
 
 @pytest.fixture
-def mock_database(mock_mysql_connection):
+def mock_database(mock_mysql_connection, request: FixtureRequest):
     mock_database = SQLMealPlanDB({"HOST": "mock_host", "USER": "mock_user", "PASSWORD": "mock_password", "DATABASE": "mock_database"})
     mock_database.startup()
     mock_database.connection = mock_mysql_connection.return_value
+    def tearddown():
+        mock_database.shutdown()  
+    request.addfinalizer(tearddown)
     return mock_database
 
 def test_db_get_current_mealplan(mock_database):
