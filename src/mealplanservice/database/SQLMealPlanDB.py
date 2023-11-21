@@ -1,6 +1,7 @@
 import mysql.connector
 from mealplanservice.database import schema
 from .BaseMealPlanDB import BaseMealPlanDB
+from fastapi import HTTPException, status
 
 class SQLMealPlanDB(BaseMealPlanDB):
     def __init__(self, cfg: dict) -> None:
@@ -9,43 +10,51 @@ class SQLMealPlanDB(BaseMealPlanDB):
         self.__cursor = None
 
     def startup(self):
-        self.__database = mysql.connector.connect(
-            host=self.cfg["HOST"],
-            user=self.cfg["USER"],
-            password=self.cfg["PASSWORD"],
-            database=self.cfg["DATABASE"]
-        )
-
-        self.__cursor = self.__database.cursor(dictionary=True)
-        self.__cursor = self.__database.cursor(buffered=True)
+        try:
+            self.__database = mysql.connector.connect(
+                host=self.cfg["HOST"],
+                user=self.cfg["USER"],
+                password=self.cfg["PASSWORD"],
+                database=self.cfg["DATABASE"]
+            )
+            self.__cursor = self.__database.cursor(dictionary=True, buffered=True)
+            self.__cursor = self.__database.cursor(buffered=True)
+        except mysql.connector.Error as err:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to connect to the database: {err}"
+            )
 
     def execute_query(self, query, parameters):
-        self.__cursor = self.__database.cursor(dictionary=True)
+        self.__cursor = self.__database.cursor(dictionary=True, buffered=True)
         self.__cursor = self.__database.cursor(buffered=True)
-        self.__cursor.execute(query, parameters)
-        self.__database.commit()
+        try:
+            self.__cursor.execute(query, parameters)
+            self.__database.commit()
+        except mysql.connector.Error:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Problems while executing query: {query}")
         self.__cursor.close()
 
-    def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):
+    def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):  
         parameters = (0, baseMealPlan.userID, baseMealPlan.startDate, baseMealPlan.endDate)
         self.execute_query("INSERT INTO mealPlan VALUES(%s, %s, %s, %s)", parameters)
         return self.__cursor.lastrowid
 
     def create_meal_recipe(self, mealPlanRecipe: schema.mealPlanRecipe):
         self.execute_query("INSERT INTO mealPlanRecipes VALUES(0, %s, %s)", (mealPlanRecipe.planID, mealPlanRecipe.recipeID))
-        return {"message": "Success", "planID": mealPlanRecipe.planID, "recipeID": mealPlanRecipe.recipeID}
+        return "Success"
 
     def create_meals_per_day(self, mealsPerDay: schema.mealsPerDay):
         parameters = (0, mealsPerDay.planID, mealsPerDay.meals, mealsPerDay.totalCalories, mealsPerDay.totalProtein,
                       mealsPerDay.totalCarbohydrates, mealsPerDay.totalFat)
         self.execute_query("INSERT INTO mealsPerDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
-        return {"message": "Success", "planID": mealsPerDay.planID, "recipeID": mealsPerDay.meals}
+        return "Success"
 
-    def delete_meal_plan(self, planID: int):
-        if(planID == None):
-            return
-        self.execute_query("DELETE FROM mealPlan WHERE planID=%s", (planID,))
-        return {"Message": "Success", "planID": planID}
+    def delete_meal_plan(self, userID: int, planID: int):
+        if(userID == None or planID == None):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No plan with id {planID} to delete")
+        self.execute_query("DELETE FROM mealPlan WHERE userID=%s AND planID=%s", (userID, planID))
+        return "Success"
 
     def get_current_meal_plan(self, userID: int):
         self.execute_query("""
