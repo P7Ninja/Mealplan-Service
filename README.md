@@ -8,6 +8,7 @@ HOST='YOUR_HOST'
 USER='YOUR_USER'
 PASSWORD='YOUR_PASSWORD'
 DATABASE='MealPlanService'
+RECIPESERVICE='http://recipeserviceurl:port'
 ```
 the mysql prefix is only if youre using a mysql server, else look up different sqlalchemy supported sql databases
 
@@ -16,7 +17,7 @@ the mysql prefix is only if youre using a mysql server, else look up different s
 Creating docker container and running the app:
 ```sh
 docker build -t mealplanservice .
-docker run -p 8443:8443 mealplanservice
+docker run -p 8755:8755 mealplanservice
 ```
 
 ### Development

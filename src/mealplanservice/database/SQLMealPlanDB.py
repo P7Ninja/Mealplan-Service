@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 import mysql.connector
 from mealplanservice.database import schema
 from .BaseMealPlanDB import BaseMealPlanDB
@@ -21,21 +20,25 @@ class SQLMealPlanDB(BaseMealPlanDB):
         self.__cursor = self.__database.cursor(buffered=True)
 
     def execute_query(self, query, parameters):
+        self.__cursor = self.__database.cursor(dictionary=True)
+        self.__cursor = self.__database.cursor(buffered=True)
         self.__cursor.execute(query, parameters)
         self.__database.commit()
+        self.__cursor.close()
 
     def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):
-        parameters = (0, baseMealPlan.userID, baseMealPlan.startDate, baseMealPlan.endDate, baseMealPlan.totalCalories, 
-                      baseMealPlan.totalProtein, baseMealPlan.totalCarbohydrates, baseMealPlan.totalFat)
-        self.execute_query("INSERT INTO mealPlan VALUES(%s, %s, %s, %s, %s, %s, %s, %s)", parameters)
-        return {"message": "Success"}
+        parameters = (0, baseMealPlan.userID, baseMealPlan.startDate, baseMealPlan.endDate)
+        self.execute_query("INSERT INTO mealPlan VALUES(%s, %s, %s, %s)", parameters)
+        return self.__cursor.lastrowid
 
     def create_meal_recipe(self, mealPlanRecipe: schema.mealPlanRecipe):
         self.execute_query("INSERT INTO mealPlanRecipes VALUES(0, %s, %s)", (mealPlanRecipe.planID, mealPlanRecipe.recipeID))
         return {"message": "Success", "planID": mealPlanRecipe.planID, "recipeID": mealPlanRecipe.recipeID}
 
     def create_meals_per_day(self, mealsPerDay: schema.mealsPerDay):
-        self.execute_query("INSERT INTO mealsPerDay VALUES(0, %s, %s)", (mealsPerDay.planID, mealsPerDay.meals))
+        parameters = (0, mealsPerDay.planID, mealsPerDay.meals, mealsPerDay.totalCalories, mealsPerDay.totalProtein,
+                      mealsPerDay.totalCarbohydrates, mealsPerDay.totalFat)
+        self.execute_query("INSERT INTO mealsPerDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
         return {"message": "Success", "planID": mealsPerDay.planID, "recipeID": mealsPerDay.meals}
 
     def delete_meal_plan(self, planID: int):
@@ -43,45 +46,6 @@ class SQLMealPlanDB(BaseMealPlanDB):
             return
         self.execute_query("DELETE FROM mealPlan WHERE planID=%s", (planID,))
         return {"Message": "Success", "planID": planID}
-
-    # def get_current_meal_plan(self, userID: int):
-    #     self.execute_query("SELECT * FROM mealPlan WHERE userID=%s ORDER BY planID DESC", (userID,))
-    #     meal_plan_result   = self.__cursor.fetchone()
-    #     meal_plan_json = {
-    #         "planID": meal_plan_result[0],
-    #         "userID": meal_plan_result[1],
-    #         "startDate": str(meal_plan_result[2]),
-    #         "endDate": str(meal_plan_result[3]),
-    #         "totalCalories": meal_plan_result[4],
-    #         "totalProtein": meal_plan_result[5],
-    #         "totalCarbohydrates": meal_plan_result[6],
-    #         "totalFat": meal_plan_result[7]
-    #     }
-
-    #     self.execute_query("SELECT id, recipeID FROM mealplanrecipes WHERE planID=%s ORDER BY id DESC", (meal_plan_json["planID"],))
-    #     meal_plan_recipes_result = self.__cursor.fetchall()
-    #     recipe_id_list = []
-    #     for row in meal_plan_recipes_result:
-    #         recipe_id_list.append(row[1])
-
-    #     self.execute_query("SELECT id, meals FROM mealsperday WHERE planID=%s ORDER BY id DESC", (meal_plan_json["planID"],))
-    #     meals_per_day_result = self.__cursor.fetchall()
-    #     meals_per_day_list = []
-    #     for row in meals_per_day_result:
-    #         meals_per_day_list.append(row[1])
-
-    #     days = []
-    #     latest_recipe_index = 0
-    #     for day in range(0, len(meals_per_day_list)):
-    #         day_content = {}
-    #         for meal in range(meals_per_day_list[day]):
-    #             day_content[f"recipeID{meal+1}"] = recipe_id_list[latest_recipe_index + meal]
-    #         days.append(day_content)
-    #         latest_recipe_index += meal + 1
-    #     days.reverse()
-    #     meal_plan_json["days"] = days
-
-    #     return meal_plan_json
 
     def get_current_meal_plan(self, userID: int):
         self.execute_query("""
