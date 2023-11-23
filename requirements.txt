@@ -11,3 +11,4 @@ uvicorn==0.23.2
 requests==2.31.0
 httpx==0.25.1
 python-multipart==0.0.6
+pytest-mock==3.12.0
