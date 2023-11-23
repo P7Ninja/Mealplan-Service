@@ -7,15 +7,6 @@ from mealplanservice.database import SQLMealPlanDB
 from mealplanservice.database.schema import BaseMealPlan, mealPlanRecipe, mealsPerDay, mealplan
 
 @pytest.fixture
-def db(request: FixtureRequest):
-    db = SQLMealPlanDB({'HOST': 'krishusdata.mysql.database.azure.com', 'USER': 'kmg', 'PASSWORD': ']q#GSgNHw}Ynb?9', 'DATABASE': 'mealplanservicetest'})
-    db.startup()
-    def tearddown():
-        db.shutdown()  
-    request.addfinalizer(tearddown)
-    return db
-
-@pytest.fixture
 def mock_mysql_connection(mocker):
     return mocker.patch("mysql.connector.connect")
 
