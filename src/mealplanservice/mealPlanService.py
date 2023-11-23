@@ -45,8 +45,13 @@ class mealPlanService:
     async def get_all_meal_plans(self, userID: int=0):
         return self.__db.get_all_meal_plans(userID)
     
+<<<<<<< HEAD
     async def delete_meal_plan(self, userID: int=0, planID: int=0):
         return self.__db.delete_meal_plan(userID, planID)
+=======
+    async def delete_meal_plan(self, planID: int=0):
+        return self.__db.delete_meal_plan(planID)
+>>>>>>> 5a58c7f6860f29d8773d115afe4c897d408c5217
 
     async def generate_meal_plan(self, user_id: int=0, targets: List[int] = Query([]), split_days: List[float] = Query([])):
         async with httpx.AsyncClient() as client:
