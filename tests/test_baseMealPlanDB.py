@@ -17,7 +17,7 @@ def db(request: FixtureRequest):
 
 @pytest.fixture
 def mock_mysql_connection(mocker):
-    return mocker.patch("mealplanservice.database.SQLMealPlanDB.mysql.connector.connect")
+    return mocker.patch("mysql.connector.connect")
 
 @pytest.fixture
 def mock_database(mock_mysql_connection, request: FixtureRequest):
