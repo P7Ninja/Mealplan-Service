@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Query
 from .database import BaseMealPlanDB
 from typing import Annotated
+from .database import schema
 
 _list = Annotated[list[str] | None, Query()]
 
@@ -20,72 +21,28 @@ class mealPlanService:
             self.__db.shutdown()
 
     def configure_routes(self):
-        self.__app.add_api_route("/get_current_mealplan/{id}", self.get_mealplan, methods=["GET"])
-        # self.__app.add_api_route("/get_all_mealplans/{id}", self.get_mealplan, methods=["GET"])
-        # self.__app.add_api_route("/delete_mealplan", self.delete_mealplan, methods=["POST"])
+        self.__app.add_api_route("/mealPlan", self.create_meal_plan, methods=["POST"])
+        self.__app.add_api_route("/mealPlanRecipe", self.create_meal_plan_recipe, methods=["POST"])
+        self.__app.add_api_route("/mealsPerDay", self.create_meals_per_day, methods=["POST"])
+        self.__app.add_api_route("/mealPlan/{userID}", self.get_current_meal_plan, methods=["GET"])
+        self.__app.add_api_route("/mealPlans/{userID}", self.get_all_meal_plans, methods=["GET"])
+        self.__app.add_api_route("/mealPlan/{planID}", self.delete_meal_plan, methods=["DELETE"])
         self.__app.add_api_route("/", lambda: {"message": "Mealplan-Service"}, methods=["GET"])
 
-    async def get_current_mealplan(self,
-                                   planID: int=0, 
-                                   userID: int=0, 
-                                   startDate: str='', 
-                                   endDate: str='', 
-                                   totalCalories: int=0, 
-                                   totalProtein: float=0.0,
-                                   totalCarbohydrates: float=0.0,
-                                   totalFat: float=0.0):
-        return self.__db.get_current_mealplan(planID = planID,
-                                              userID=userID,
-                                              startDate=startDate,
-                                              endDate=endDate,
-                                              totalCalories=totalCalories,
-                                              totalProtein=totalProtein,
-                                              totalCarbohydrates=totalCarbohydrates,
-                                              totalFat=totalFat
-                                              )
+    async def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):
+        return self.__db.create_meal_plan(baseMealPlan)
 
-    # async def get_all_mealplans(self, userID int):
-        
-
-
-
-    async def get_recipe(self, id: int):
-        return self.__db.get_recipe(id)
+    async def create_meal_plan_recipe(self, mealPlanRecipe: schema.mealPlanRecipe):
+        return self.__db.create_meal_recipe(mealPlanRecipe)
     
-    async def get_recipes(self, 
-                          calories: float=0.0, 
-                          protein: float=0.0, 
-                          fat: float=0.0, 
-                          carbohydrates: float=0.0, 
-                          energy_error: float=0.0, 
-                          tags: _list=None,
-                          ingredients: _list=None
-                          ):
-        return self.__db.get_recipes(
-            calories=calories, 
-            protein=protein,
-            fat=fat,
-            carbs=carbohydrates,
-            energy_error=energy_error,
-            tags=tags,
-            ingredients=ingredients
-            )
+    async def create_meals_per_day(self, mealsPerDay: schema.mealsPerDay):
+        return self.__db.create_meals_per_day(mealsPerDay)
+
+    async def get_current_meal_plan(self, userID: int=0):
+        return self.__db.get_current_meal_plan(userID)
+
+    async def get_all_meal_plans(self, userID: int=0):
+        return self.__db.get_all_meal_plans(userID)
     
-    async def get_random_recipe(self, 
-                          calories: float=0.0, 
-                          protein: float=0.0, 
-                          fat: float=0.0, 
-                          carbohydrates: float=0.0, 
-                          energy_error: float=0.0, 
-                          tags: _list=None,
-                          ingredients: _list=None
-                          ):
-        return self.__db.get_random_recipe(
-            calories=calories, 
-            protein=protein,
-            fat=fat,
-            carbs=carbohydrates,
-            energy_error=energy_error,
-            tags=tags,
-            ingredients=ingredients
-            )
+    async def delete_meal_plan(self, planID: int=0):
+        return self.__db.delete_meal_plan(planID)

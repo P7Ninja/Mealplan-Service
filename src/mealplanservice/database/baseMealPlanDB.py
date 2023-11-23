@@ -13,17 +13,15 @@ class BaseMealPlanDB:
     def create(self):
         return
     
-    def create_mealplan(self, mealplan: schema.BasemealPlan) -> schema.mealplan:
+    def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan) -> schema.mealplan:
          return
     
-    def get_all_mealplans(self, userID: int) -> schema.mealplan:
+    def get_all_meal_plans(self, userID: int) -> schema.mealplan:
          return
     
-    def get_current_mealplan(self, userID: int) -> schema.mealplan:
+    def get_current_meal_plan(self, userID: int) -> schema.mealplan:
          return
     
-    def delete_mealplan(self, planID: int) -> schema.mealplan:
+    def delete_meal_plan(self, planID: int) -> schema.mealplan:
          return
     
-    # def update_mealplan_item(self, id: int) -> schema.mealplan:
-    #     raise NotImplementedError("Not Implemented!")
