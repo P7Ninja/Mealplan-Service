@@ -4,6 +4,7 @@ from .database import schema
 import httpx
 from typing import List
 from datetime import date, timedelta
+from fastapi import HTTPException, status
 
 class mealPlanService:
     def __init__(self, app: FastAPI, database: BaseMealPlanDB, cfg: dict) -> None:
@@ -48,6 +49,16 @@ class mealPlanService:
     async def delete_meal_plan(self, userID: int=0, planID: int=0):
         return self.__db.delete_meal_plan(userID, planID)
 
+    async def get_recipe_from_recipeservice(self, recipe_split_parameters):
+        try:
+            async with httpx.AsyncClient() as client:
+                return await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=recipe_split_parameters)
+        except httpx.ConnectError as err:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Failed to communicate with the recipe service: {err}"
+            )
+
     async def generate_meal_plan(self, user_id: int=0, targets: List[int] = Query([]), split_days: List[float] = Query([])):
         async with httpx.AsyncClient() as client:
             energy_error = 1
@@ -74,7 +85,9 @@ class mealPlanService:
                     'tags': ["Morgenmad"], 
                     'ingredients': []
                     }
-                    breakfast_response = await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=split_breakfast)
+
+                    breakfast_response = await self.get_recipe_from_recipeservice(split_breakfast)
+
                     breakfast_recipe = breakfast_response.json()
                     all_recipes[f"recipe{recipe_num}"] = breakfast_recipe
                 if lunch_split:
@@ -88,7 +101,7 @@ class mealPlanService:
                     'tags': ["Middagsmad"], 
                     'ingredients': []
                     }
-                    lunch_response = await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=split_lunch)
+                    lunch_response = await self.get_recipe_from_recipeservice(split_lunch)
                     lunch_recipe = lunch_response.json()
                     all_recipes[f"recipe{recipe_num}"] = lunch_recipe
                 if dinner_split:
@@ -102,7 +115,7 @@ class mealPlanService:
                     'tags': ["Aftensmad"], 
                     'ingredients': []
                     }
-                    dinner_response = await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=split_dinner)
+                    dinner_response = await self.get_recipe_from_recipeservice(split_dinner)
                     dinner_recipe = dinner_response.json()
                     all_recipes[f"recipe{recipe_num}"] = dinner_recipe
 
