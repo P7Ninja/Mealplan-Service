@@ -1,15 +1,16 @@
 from pydantic import BaseModel
+from typing import List
 
 class BaseMealPlan(BaseModel):
     userID: int
     startDate: str
     endDate: str
 
-class mealPlanRecipe(BaseModel):
+class MealPlanRecipe(BaseModel):
     planID: int
     recipeID: int
 
-class mealsPerDay(BaseModel):
+class MealsPerDay(BaseModel):
     planID: int
     meals: int
     totalCalories: int
@@ -17,5 +18,10 @@ class mealsPerDay(BaseModel):
     totalCarbohydrates: float
     totalFat: float
 
-class mealplan(BaseMealPlan):
+class GenerateMealPlan(BaseModel):
+    userID: int
+    targets: List[float]
+    split_days: List[float]
+
+class Mealplan(BaseMealPlan):
     id: int

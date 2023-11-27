@@ -25,19 +25,19 @@ class mealPlanService:
         self.__app.add_api_route("/mealPlan", self.create_meal_plan, methods=["POST"])
         self.__app.add_api_route("/mealPlanRecipe", self.create_meal_plan_recipe, methods=["POST"])
         self.__app.add_api_route("/mealsPerDay", self.create_meals_per_day, methods=["POST"])
+        self.__app.add_api_route("/generate", self.generate_meal_plan, methods=["POST"])
         self.__app.add_api_route("/mealPlan/{userID}", self.get_current_meal_plan, methods=["GET"])
         self.__app.add_api_route("/mealPlans/{userID}", self.get_all_meal_plans, methods=["GET"])
-        self.__app.add_api_route("/mealPlan/{planID}", self.delete_meal_plan, methods=["DELETE"])
-        self.__app.add_api_route("/generate/", self.generate_meal_plan, methods=["POST"])
         self.__app.add_api_route("/", lambda: {"message": "Mealplan-Service"}, methods=["GET"])
+        self.__app.add_api_route("/mealPlan/{planID}/{userID}", self.delete_meal_plan, methods=["DELETE"])
    
     async def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):
         return self.__db.create_meal_plan(baseMealPlan)
 
-    async def create_meal_plan_recipe(self, mealPlanRecipe: schema.mealPlanRecipe):
+    async def create_meal_plan_recipe(self, mealPlanRecipe: schema.MealPlanRecipe):
         return self.__db.create_meal_recipe(mealPlanRecipe)
     
-    async def create_meals_per_day(self, mealsPerDay: schema.mealsPerDay):
+    async def create_meals_per_day(self, mealsPerDay: schema.MealsPerDay):
         return self.__db.create_meals_per_day(mealsPerDay)
 
     async def get_current_meal_plan(self, userID: int=0):
@@ -59,28 +59,28 @@ class mealPlanService:
                 detail=f"Failed to communicate with the recipe service: {err}"
             )
 
-    async def generate_meal_plan(self, user_id: int=0, targets: List[int] = Query([]), split_days: List[float] = Query([])):
+    async def generate_meal_plan(self, generate_meal_plan: schema.GenerateMealPlan):
         async with httpx.AsyncClient() as client:
             energy_error = 1
             # inventory = getinventory(user_id)
             all_recipes = {}
             aggregated_daily_recipes = {}
-            for day in range(0, (len(split_days)//3)):
+            for day in range(0, (len(generate_meal_plan.split_days)//3)):
                 breakfast_index = 3 * day
                 lunch_index = 3 * day + 1
                 dinner_index = 3 * day + 2
-                breakfast_split = split_days[breakfast_index]
-                lunch_split = split_days[lunch_index]
-                dinner_split = split_days[dinner_index]
+                breakfast_split = generate_meal_plan.split_days[breakfast_index]
+                lunch_split = generate_meal_plan.split_days[lunch_index]
+                dinner_split = generate_meal_plan.split_days[dinner_index]
                 recipe_num = 0
 
                 if breakfast_split:
                     recipe_num += 1
                     split_breakfast = {
-                    "calories": targets[0] * breakfast_split,
-                    "fat": targets[1] * breakfast_split,
-                    "carbohydrates": targets[2] * breakfast_split,
-                    "protein": targets [3] * breakfast_split,
+                    "calories": generate_meal_plan.targets[0] * breakfast_split,
+                    "fat": generate_meal_plan.targets[1] * breakfast_split,
+                    "carbohydrates": generate_meal_plan.targets[2] * breakfast_split,
+                    "protein": generate_meal_plan.targets [3] * breakfast_split,
                     'energy_error': energy_error, 
                     'tags': ["Morgenmad"], 
                     'ingredients': []
@@ -93,10 +93,10 @@ class mealPlanService:
                 if lunch_split:
                     recipe_num += 1
                     split_lunch = {
-                    "calories": targets[0] * lunch_split,
-                    "fat": targets[1] * lunch_split,
-                    "carbohydrates": targets[2] * lunch_split,
-                    "protein": targets [3] * lunch_split,
+                    "calories": generate_meal_plan.targets[0] * lunch_split,
+                    "fat": generate_meal_plan.targets[1] * lunch_split,
+                    "carbohydrates": generate_meal_plan.targets[2] * lunch_split,
+                    "protein": generate_meal_plan.targets [3] * lunch_split,
                     'energy_error': energy_error, 
                     'tags': ["Middagsmad"], 
                     'ingredients': []
@@ -107,10 +107,10 @@ class mealPlanService:
                 if dinner_split:
                     recipe_num += 1
                     split_dinner = {
-                    "calories": targets[0] * dinner_split,
-                    "fat": targets[1] * dinner_split,
-                    "carbohydrates": targets[2] * dinner_split,
-                    "protein": targets [3] * dinner_split,
+                    "calories": generate_meal_plan.targets[0] * dinner_split,
+                    "fat": generate_meal_plan.targets[1] * dinner_split,
+                    "carbohydrates": generate_meal_plan.targets[2] * dinner_split,
+                    "protein": generate_meal_plan.targets [3] * dinner_split,
                     'energy_error': energy_error, 
                     'tags': ["Aftensmad"], 
                     'ingredients': []
@@ -122,9 +122,11 @@ class mealPlanService:
                 if all_recipes == {}:
                     return "ERROR! The split_days values are all 0!"
                 aggregated_daily_recipes[f"day{day+1}"] = await self.aggregate_daily_recipes(all_recipes)
-
-            await self.insert_generated_mealplan(user_id, aggregated_daily_recipes)
+            print(aggregated_daily_recipes)
+            await self.insert_generated_mealplan(generate_meal_plan.userID, aggregated_daily_recipes)
+            print("Returning...")
             return aggregated_daily_recipes
+
 
         
     async def aggregate_daily_recipes(self, all_recipes):

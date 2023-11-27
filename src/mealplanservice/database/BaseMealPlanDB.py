@@ -13,15 +13,15 @@ class BaseMealPlanDB:
     def create(self):
         return
     
-    def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan) -> schema.mealplan:
+    def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan) -> schema.Mealplan:
          return
     
-    def get_all_meal_plans(self, userID: int) -> schema.mealplan:
+    def get_all_meal_plans(self, userID: int) -> schema.Mealplan:
          return
     
-    def get_current_meal_plan(self, userID: int) -> schema.mealplan:
+    def get_current_meal_plan(self, userID: int) -> schema.Mealplan:
          return
     
-    def delete_meal_plan(self, planID: int) -> schema.mealplan:
+    def delete_meal_plan(self, planID: int) -> schema.Mealplan:
          return
     

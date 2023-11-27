@@ -40,12 +40,12 @@ class SQLMealPlanDB(BaseMealPlanDB):
         self.__cursor.close()
         return self.__cursor.lastrowid
 
-    def create_meal_recipe(self, mealPlanRecipe: schema.mealPlanRecipe):
+    def create_meal_recipe(self, mealPlanRecipe: schema.MealPlanRecipe):
         self.execute_query("INSERT INTO mealPlanRecipes VALUES(0, %s, %s)", (mealPlanRecipe.planID, mealPlanRecipe.recipeID))
         self.__cursor.close()
         return "Success"
 
-    def create_meals_per_day(self, mealsPerDay: schema.mealsPerDay):
+    def create_meals_per_day(self, mealsPerDay: schema.MealsPerDay):
         parameters = (0, mealsPerDay.planID, mealsPerDay.meals, mealsPerDay.totalCalories, mealsPerDay.totalProtein,
                       mealsPerDay.totalCarbohydrates, mealsPerDay.totalFat)
         self.execute_query("INSERT INTO mealsPerDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
@@ -55,6 +55,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
     def delete_meal_plan(self, userID: int, planID: int):
         if(userID == None or planID == None):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No plan with id {planID} to delete")
+        print("deleting:", userID, planID)
         self.execute_query("DELETE FROM mealPlan WHERE userID=%s AND planID=%s", (userID, planID))
         self.__cursor.close()
         return "Success"
