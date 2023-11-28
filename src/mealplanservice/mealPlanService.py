@@ -65,7 +65,9 @@ class mealPlanService:
             # inventory = getinventory(user_id)
             all_recipes = {}
             aggregated_daily_recipes = {}
+
             for day in range(0, (len(generate_meal_plan.split_days)//3)):
+                print("day", day)
                 breakfast_index = 3 * day
                 lunch_index = 3 * day + 1
                 dinner_index = 3 * day + 2
@@ -121,10 +123,9 @@ class mealPlanService:
 
                 if all_recipes == {}:
                     return "ERROR! The split_days values are all 0!"
+
                 aggregated_daily_recipes[f"day{day+1}"] = await self.aggregate_daily_recipes(all_recipes)
-            print(aggregated_daily_recipes)
             await self.insert_generated_mealplan(generate_meal_plan.userID, aggregated_daily_recipes)
-            print("Returning...")
             return aggregated_daily_recipes
 
 
@@ -161,11 +162,11 @@ class mealPlanService:
             totalProtein = aggregated_daily_recipes[f"day{day}"]["totalProtein"]
             totalCarbohydrates = aggregated_daily_recipes[f"day{day}"]["totalCarbohydrates"]
             totalFat = aggregated_daily_recipes[f"day{day}"]["totalFat"]
-            meals_per_day = schema.mealsPerDay(planID=planID, meals=meals, totalCalories=totalCalories, 
+            meals_per_day = schema.MealsPerDay(planID=planID, meals=meals, totalCalories=totalCalories, 
                                                totalProtein=totalProtein, totalCarbohydrates=totalCarbohydrates, totalFat=totalFat)
             await self.create_meals_per_day(meals_per_day)
             for recipe_num in range(1, len(aggregated_daily_recipes[f"day{day}"]["recipes"]) + 1):
-                meal_plan_recipe = schema.mealPlanRecipe(planID=planID, recipeID=aggregated_daily_recipes[f"day{day}"]["recipes"][f"recipe{recipe_num}"])
+                meal_plan_recipe = schema.MealPlanRecipe(planID=planID, recipeID=aggregated_daily_recipes[f"day{day}"]["recipes"][f"recipe{recipe_num}"])
                 await self.create_meal_plan_recipe(meal_plan_recipe)
             
 
