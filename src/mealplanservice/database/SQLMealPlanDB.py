@@ -36,19 +36,19 @@ class SQLMealPlanDB(BaseMealPlanDB):
         
     def create_meal_plan(self, baseMealPlan: schema.BaseMealPlan):  
         parameters = (0, baseMealPlan.userID, baseMealPlan.startDate, baseMealPlan.endDate)
-        self.execute_query("INSERT INTO mealPlan VALUES(%s, %s, %s, %s)", parameters)
+        self.execute_query("INSERT INTO mealplan VALUES(%s, %s, %s, %s)", parameters)
         self.__cursor.close()
         return self.__cursor.lastrowid
 
     def create_meal_recipe(self, mealPlanRecipe: schema.MealPlanRecipe):
-        self.execute_query("INSERT INTO mealPlanRecipes VALUES(0, %s, %s)", (mealPlanRecipe.planID, mealPlanRecipe.recipeID))
+        self.execute_query("INSERT INTO mealplanrecipes VALUES(0, %s, %s)", (mealPlanRecipe.planID, mealPlanRecipe.recipeID))
         self.__cursor.close()
         return "Success"
 
     def create_meals_per_day(self, mealsPerDay: schema.MealsPerDay):
         parameters = (0, mealsPerDay.planID, mealsPerDay.meals, mealsPerDay.totalCalories, mealsPerDay.totalProtein,
                       mealsPerDay.totalCarbohydrates, mealsPerDay.totalFat)
-        self.execute_query("INSERT INTO mealsPerDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
+        self.execute_query("INSERT INTO mealsperDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
         self.__cursor.close()
         return "Success"
 
@@ -56,12 +56,12 @@ class SQLMealPlanDB(BaseMealPlanDB):
         if(userID == None or planID == None):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No plan with id {planID} to delete")
         print("deleting:", userID, planID)
-        self.execute_query("DELETE FROM mealPlan WHERE userID=%s AND planID=%s", (userID, planID))
+        self.execute_query("DELETE FROM mealplan WHERE userID=%s AND planID=%s", (userID, planID))
         self.__cursor.close()
         return "Success"
 
     def get_current_meal_plan(self, userID: int):
-        self.execute_query("SELECT planID, startDate, endDate FROM mealPlan WHERE userID=%s ORDER BY planID DESC", (userID,))
+        self.execute_query("SELECT planID, startDate, endDate FROM mealplan WHERE userID=%s ORDER BY planID DESC", (userID,))
         meal_plan_results = self.__cursor.fetchone()
         planID = meal_plan_results[0]
 
@@ -104,7 +104,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
         return mealplan_json
     
     def get_all_meal_plans(self, userID: int):
-        self.execute_query("SELECT planID, startDate, endDate FROM mealPlan WHERE userID=%s ORDER BY planID ASC", (userID,))
+        self.execute_query("SELECT planID, startDate, endDate FROM mealplan WHERE userID=%s ORDER BY planID ASC", (userID,))
         meal_plan_results = self.__cursor.fetchall()
 
         mealplan_json = {}
