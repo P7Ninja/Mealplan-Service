@@ -48,7 +48,7 @@ class SQLMealPlanDB(BaseMealPlanDB):
     def create_meals_per_day(self, mealsPerDay: schema.MealsPerDay):
         parameters = (0, mealsPerDay.planID, mealsPerDay.meals, mealsPerDay.totalCalories, mealsPerDay.totalProtein,
                       mealsPerDay.totalCarbohydrates, mealsPerDay.totalFat)
-        self.execute_query("INSERT INTO mealsperDay VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
+        self.execute_query("INSERT INTO mealsperday VALUES(%s, %s, %s, %s, %s, %s, %s)", parameters)
         self.__cursor.close()
         return "Success"
 

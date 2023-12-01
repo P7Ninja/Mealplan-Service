@@ -52,7 +52,7 @@ class mealPlanService:
     async def get_recipe_from_recipeservice(self, recipe_split_parameters):
         try:
             async with httpx.AsyncClient() as client:
-                return await client.get(self.__cfg["RECIPESERVICE"]+"/recipe/random", params=recipe_split_parameters)
+                return await client.get(self.__cfg["RECIPE_SERVICE"] + "/recipe/random", params=recipe_split_parameters)
         except httpx.ConnectError as err:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
